@@ -9,7 +9,6 @@ from selenium.webdriver.firefox.options import Options
 from nyse100 import nyse100
 from nasdaq100 import nasdaq100
 from sqlite3 import Error
-from create_table_cmd import create_table
 import unittest, time, re, sqlite3, datetime
 
 date = datetime.datetime.now().strftime("%Y-%m-%d")
@@ -66,12 +65,7 @@ class BuySellForCompany(unittest.TestCase) :
         self.verificationErrors = []
         self.accept_next_alert = True
         create_new_entry(conn, date)
-    '''
-    def close_data_survey(self) :
-        try: self.driver.find_element_by_xpath('/html/body/div[5]/div[1]/div[1]/ii').click()
-        except NoSuchElementException as e: return False
-        return True
-    '''
+
     def test_buy_sell_for_companies(self) :
         driver = self.driver
         # nyse100
@@ -80,7 +74,7 @@ class BuySellForCompany(unittest.TestCase) :
                 driver.get("https://www.investing.com/equities/" + nyse100[i] + "-technical")
                 try:
                     driver.find_element_by_xpath("/html/body/div[5]/section/div[8]/ul/li[8]/a").click()
-                except:
+                except: # catches any exception, selenium will throw many if it can't clock on an element
                     driver.get("https://www.investing.com/equities/" + nyse100[i] + "-technical")
                     close_data_survey(self)
                     driver.find_element_by_xpath("/html/body/div[5]/section/div[8]/ul/li[8]/a").click()
@@ -107,7 +101,7 @@ class BuySellForCompany(unittest.TestCase) :
         for i in range(0, len(nasdaq100) - 1) :
             if exists(conn, nasdaq100[i].replace("-",""), date) is None :
                 driver.get("https://www.investing.com/equities/" + nasdaq100[i] + "-technical")
-                try:
+                try: # try clicking on weekly indicators
                     driver.find_element_by_xpath("/html/body/div[5]/section/div[8]/ul/li[8]/a").click()
 
                     tiBuy_clean = driver.find_element_by_id("tiBuy").text.replace("(", "").replace(")", "")
@@ -128,8 +122,8 @@ class BuySellForCompany(unittest.TestCase) :
                     add_to_db(conn, "Price", nasdaq100[i].replace("-", ""), price, date)
 
                     print(nasdaq100[i] + ": " + tiBuy.replace("(", "").replace(")", ""))
-                except:
-                    try:
+                except: # catches any exception, selenium will throw many if it can't clock on an element
+                    try: # try again for second time
                         if exists(conn, nasdaq100[i].replace("-",""), date) is None :
                             close_data_survey(self)
                             driver.find_element_by_xpath("/html/body/div[5]/section/div[8]/ul/li[8]/a").click()
@@ -151,26 +145,8 @@ class BuySellForCompany(unittest.TestCase) :
                             add_to_db(conn, "maSell", nasdaq100[i].replace("-", ""), maSell, date)
                             add_to_db(conn, "Price", nasdaq100[i].replace("-", ""), price, date)
 
-                    except:
+                    except: # catches any exception, selenium will throw many if it can't clock on an element
                         continue
-
-    '''
-    def is_alert_present(self):
-        try: self.driver.switch_to_alert()
-        except NoAlertPresentException as e: return False
-        return True
-    
-    def close_alert_and_get_its_text(self):
-        try:
-            alert = self.driver.switch_to_alert()
-            alert_text = alert.text
-            if self.accept_next_alert:
-                alert.accept()
-            else:
-                alert.dismiss()
-            return alert_text
-        finally: self.accept_next_alert = True
-    '''
     def tearDown(self) :
         self.driver.quit()
         self.assertEqual([], self.verificationErrors)
@@ -184,19 +160,7 @@ def create_connection(db_file):
         print(e)
 
     return None
-
-def make_table(conn, sql) :
-    """ create a table from the create_table_sql statement
-    :param conn: Connection object
-    :param create_table_sql: a CREATE TABLE statement
-    :return:
-    """
-    try:
-        c = conn.cursor()
-        c.execute(sql)
-    except Error as e:
-        print(e)
-
+    
 conn = create_connection("/home/timothy/financial/db/stock_ratings.db")
 
 if __name__ == '__main__' :
