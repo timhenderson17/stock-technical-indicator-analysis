@@ -14,8 +14,8 @@ import unittest, time, re, sqlite3, datetime
 date = datetime.datetime.now().strftime("%Y-%m-%d")
 date2 = (date,)
 
-def create_new_entry(conn, date) :
-    sql = "INSERT OR IGNORE INTO tiBuy(DATE) VALUES(\"" + date + "\");"
+def create_new_entry(conn, date, table) :
+    sql = "INSERT OR IGNORE INTO " + table + "(DATE) VALUES(\"" + date + "\");"
     cur = conn.cursor()
     cur.execute(sql)
     print(sql)
@@ -31,7 +31,7 @@ def add_to_db(conn, table, co, val, date) :
     return cur.lastrowid 
 
 def exists(conn, co, date) :
-    sql = "SELECT " + co + " FROM tiBuy WHERE DATE = \"" + date + "\";"
+    sql = "SELECT " + co + " FROM Price WHERE DATE = \"" + date + "\";"
     cur = conn.cursor()
     cur.execute(sql)
     (res,) = cur.fetchone()
@@ -64,7 +64,9 @@ class BuySellForCompany(unittest.TestCase) :
         self.base_url = "https://www.investing.com/"
         self.verificationErrors = []
         self.accept_next_alert = True
-        create_new_entry(conn, date)
+        tables = ["tiBuy", "tiSell", "maBuy", "maSell", "Price"]
+        for table in tables :
+            create_new_entry(conn, date, table)
 
     def test_buy_sell_for_companies(self) :
         driver = self.driver
@@ -73,11 +75,11 @@ class BuySellForCompany(unittest.TestCase) :
             if exists(conn, nyse100[i].replace("-", ""), date) is None :
                 driver.get("https://www.investing.com/equities/" + nyse100[i] + "-technical")
                 try:
-                    driver.find_element_by_xpath("/html/body/div[5]/section/div[8]/ul/li[8]/a").click()
+                    driver.find_element_by_xpath("/html/body/div[5]/section/div[8]/ul/li[7]/a").click()
                 except: # catches any exception, selenium will throw many if it can't clock on an element
                     driver.get("https://www.investing.com/equities/" + nyse100[i] + "-technical")
                     close_data_survey(self)
-                    driver.find_element_by_xpath("/html/body/div[5]/section/div[8]/ul/li[8]/a").click()
+                    driver.find_element_by_xpath("/html/body/div[5]/section/div[8]/ul/li[7]/a").click()
 
                 tiBuy_clean = driver.find_element_by_id("tiBuy").text.replace("(", "").replace(")", "")
                 tiBuy = int("0" + tiBuy_clean)
@@ -102,7 +104,7 @@ class BuySellForCompany(unittest.TestCase) :
             if exists(conn, nasdaq100[i].replace("-",""), date) is None :
                 driver.get("https://www.investing.com/equities/" + nasdaq100[i] + "-technical")
                 try: # try clicking on weekly indicators
-                    driver.find_element_by_xpath("/html/body/div[5]/section/div[8]/ul/li[8]/a").click()
+                    driver.find_element_by_xpath("/html/body/div[5]/section/div[8]/ul/li[7]/a").click()
 
                     tiBuy_clean = driver.find_element_by_id("tiBuy").text.replace("(", "").replace(")", "")
                     tiBuy = int("0" + tiBuy_clean)
@@ -126,7 +128,7 @@ class BuySellForCompany(unittest.TestCase) :
                     try: # try again for second time
                         if exists(conn, nasdaq100[i].replace("-",""), date) is None :
                             close_data_survey(self)
-                            driver.find_element_by_xpath("/html/body/div[5]/section/div[8]/ul/li[8]/a").click()
+                            driver.find_element_by_xpath("/html/body/div[5]/section/div[8]/ul/li[7]/a").click()
 
                             tiBuy_clean = driver.find_element_by_id("tiBuy").text.replace("(", "").replace(")", "")
                             tiBuy = int("0" + tiBuy_clean)
