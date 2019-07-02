@@ -54,7 +54,6 @@ def close_data_survey(self) :
     except: x = 4
     return x
 
-
 class BuySellForCompany(unittest.TestCase) :
     def setUp(self) :
         options = Options()
