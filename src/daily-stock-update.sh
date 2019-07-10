@@ -5,10 +5,12 @@ cd /home/timothy/financial
 source env/bin/activate
 cd /home/timothy/financial/src
 # python cannot catch all the errors, so sometimes it just needs restart where it left off
-python3 ./BuySellForCompany.py
-python3 ./BuySellForCompany.py
-python3 ./BuySellForCompany.py
-python3 ./BuySellForCompany.py
-python3 ./BuySellForCompany.py
-python3 ./BuySellForCompany.py
-python3 ./BuySellForCompany.py
+
+MY_OUTPUT="$(python3 ./BuySellForCompany.py)"
+until [[ "$MY_OUTPUT" == *"SUCCESS"* ]]
+do
+    echo "$MY_OUTPUT"
+    MY_OUTPUT="$(python3 ./BuySellForCompany.py)"
+done
+
+echo "$MY_OUTPUT"
