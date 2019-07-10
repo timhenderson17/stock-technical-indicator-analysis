@@ -80,5 +80,4 @@ nyse100 = [
     "wal-mart-stores",
     "disney",
     "wells-fargo",
-    "yum!-brands-inc"
 ]

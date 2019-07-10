@@ -50,7 +50,7 @@ def close_data_survey(self) :
         self.driver.find_element_by_class('newButton Orange').click()
     except: x = 3
     try:
-        self.driver.find_element_by_class('userDataPopup js-userDataPopup').click()
+        self.driver.find_element_by_class('bugCloseIcon').click()
     except: x = 4
     return x
 
@@ -168,6 +168,7 @@ if __name__ == '__main__' :
     # conn = create_connection("/home/timothy/financial/stock_ratings.db")
     # if conn is not None :
     unittest.main()
+    print("SUCCESS")
         # create_new_entry(conn, date2)
     #else :
     #    print("Error: No DB connection")
