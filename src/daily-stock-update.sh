@@ -14,3 +14,5 @@ do
 done
 
 echo "$MY_OUTPUT"
+
+cp /home/timothy/financial/db/daily-stock-update.sh /home/timothy/financial/db/backup.db

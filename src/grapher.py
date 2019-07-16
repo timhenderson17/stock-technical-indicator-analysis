@@ -1,4 +1,5 @@
 import dateutil
+import progressbar
 from nyse100 import nyse100
 from nasdaq100 import nasdaq100
 from sqlite3 import Error
@@ -35,10 +36,16 @@ def retrieve_data(query, table) :
 
 conn = create_connection("/home/timothy/financial/db/stock_ratings.db")
 
-companies = [nyse100, nasdaq100]
-with PdfPages('graphs.pdf') as pdf :
-    for co in itertools.chain(*companies) :
 
+companies = [nyse100, nasdaq100]
+
+bar = progressbar.ProgressBar(maxval=len(nyse100) + len(nasdaq100), \
+        widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Percentage()])
+bar.start()
+
+with PdfPages('graphs.pdf') as pdf :
+    for i, co in enumerate(itertools.chain(*companies)) :
+        bar.update(i + 1)
         co = co.replace("-","").replace(",","").replace(".","")
 
         tiSell = retrieve_data(co, "tiSell")
@@ -72,7 +79,6 @@ with PdfPages('graphs.pdf') as pdf :
         ax2.plot_date(dates_pre, price, '-', label="Price", color='g')
 
         # Format the x-axis for dates (label formatting, rotation)
-        fig.autofmt_xdate(rotation=60)
         fig.tight_layout()
 
         # Show grids and legends
@@ -94,9 +100,10 @@ with PdfPages('graphs.pdf') as pdf :
         plt.subplot(gs[1])
         plt.plot_date(dates_pre, gains, '*', label="% Gain per Sell Rating", color='b')
         plt.tight_layout()
+        fig.autofmt_xdate(rotation=60)
         pdf.savefig(fig)
         plt.close(fig)
-
+    bar.finish()
 
 
 
